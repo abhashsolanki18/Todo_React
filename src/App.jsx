@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Navbar from './components/Navbar'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -7,20 +7,40 @@ function App() {
   const [Todo, setTodo] = useState("")
   const [Todos, setTodos] = useState([])
 
+  useEffect(() => {
+    let t = JSON.parse(localStorage.getItem("Todos"))
+    if (t) {
+      let Todos = JSON.parse(localStorage.getItem("Todos"))
+      setTodos(Todos)
+    }
+  },[])
+
+  const saveToLS = (params) => {
+    localStorage.setItem("Todos", JSON.stringify(Todos))
+  }
+
+
   const handleAdd = () => {
     setTodos([...Todos, { id: uuidv4(), Todo, isCompleted: false }])
     setTodo("")
-  }
-  const handleEdit = () => {
+    saveToLS()
+  } 
 
-  }
-  const handleDelete = (e,id) => {
+  const handleDelete = (e, id) => {
     let newTodos = Todos.filter(item => {
-      return item.id!==id;
+      return item.id !== id;
     });
     setTodos(newTodos)
+    saveToLS()
   }
 
+
+  const handleEdit = (e, id) => {
+    let t = Todos.filter(item => item.id === id)
+    setTodo(t[0].Todo)
+    handleDelete(e, id)
+    saveToLS()
+  }
 
   const handleChange = (e) => {
     setTodo(e.target.value)
@@ -34,6 +54,7 @@ function App() {
     let newTodos = [...Todos];
     newTodos[index].isCompleted = !newTodos[index].isCompleted;
     setTodos(newTodos)
+    saveToLS()
   }
 
 
@@ -52,12 +73,12 @@ function App() {
 
             return <div key={item.id} className="todo flex w-1/4 justify-between py-2 ">
               <div className='flex gap-5'>
-              <input name={item.id} onChange={handleCheckbox} type="checkbox" className="" value={item.isCompleted} />
-              <div className={item.isCompleted ? "line-through" : ""}>{item.Todo}</div>
+                <input name={item.id} onChange={handleCheckbox} type="checkbox" className="" value={item.isCompleted} />
+                <div className={item.isCompleted ? "line-through" : ""}>{item.Todo}</div>
               </div>
               <div className="buttons">
-                <button onClick={handleEdit} className='bg-purple-600 hover:bg-[#7B506F] p-2 py-1 text-white rounded-md mx-2 font-bold'>Edit</button>
-                <button onClick={(e) => {handleDelete(e, item.id)}} className='bg-purple-600 hover:bg-[#7B506F] p-2 py-1 text-white rounded-md mx-2 font-bold'>Delete</button>
+                <button onClick={(e) => { handleEdit(e, item.id) }} className='bg-purple-600 hover:bg-[#7B506F] p-2 py-1 text-white rounded-md mx-2 font-bold'>Edit</button>
+                <button onClick={(e) => { handleDelete(e, item.id) }} className='bg-purple-600 hover:bg-[#7B506F] p-2 py-1 text-white rounded-md mx-2 font-bold'>Delete</button>
               </div>
             </div>
           })}
